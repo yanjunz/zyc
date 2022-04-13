@@ -75,34 +75,23 @@ function calcLeftRight(curUser, children) {
 // 全量更新
 function calcRecursive(allUsers, curUserId) {
     var curUser = allUsers[curUserId];
-    if (curUser.is_A == 0 && curUser.is_B == 0) { // 0个节点，初始化所有字段
-        curUser.level = 0;
-        curUser.left1 = 0;
-        curUser.left2 = 0;
-        curUser.right1 = 0;
-        curUser.right2 = 0;
-    } else if (curUser.is_B == 0) { // is_A != 0 && is_B == 0 只有一个节点
-        calcRecursive(allUsers, curUser.is_A); // 递归计算A
-        var userA = allUsers[curUser.is_A];
-        curUser.level = 0;
-        curUser.left1 = userA.left1;
-        curUser.left2 = userA.left2;
-        curUser.right1 = 0;
-        curUser.right2 = 0;
-    } else { // >= 2个节点
-        var children = getChildren(allUsers, curUserId);
-        for (var i in children) {
-            calcRecursive(allUsers, children[i].userId);
-        }
-        calcLeftRight(curUser, children);
+    // 先计算所有children
+    var children = getChildren(allUsers, curUserId);
+    for (var i in children) {
+        calcRecursive(allUsers, children[i].userId);
+    }
+    // 再根据children来计算当前节点的left/right
+    calcLeftRight(curUser, children);
+    if (curUser.is_A != 0 && curUser.is_B != 0) {
         if (curUser.left2 >= kLevelupTo3 && curUser.right2 >= kLevelupTo3) {
             curUser.level = 3;
-
         } else if (curUser.left1 >= kLevelupTo2 && curUser.right1 >= kLevelupTo2) {
             curUser.level = 2;
         } else {
             curUser.level = 1;
         }
+    } else {
+        curUser.level = 0;
     }
 }
 
